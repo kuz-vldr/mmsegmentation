@@ -1,61 +1,76 @@
-# pract_work/configs/baseline_unet.py
+# pract_work/configs/unet_catdog_sanity.py
 
-_base_ = ['../../configs/_base_/models/fcn_unet_s5-d16.py']
-
-data_root = 'dataset/train_dataset_for_students'
-crop_size = (512, 512)
-
-model = dict(
-    backbone=dict(in_channels=3),
-    decode_head=dict(num_classes=3),
-    test_cfg=dict(mode='whole')
-)
-
-train_dataloader = dict(
-    dataset=dict(
-        type='BaseSegDataset',
-        data_root=data_root,
-        data_prefix=dict(img_path='img/train', seg_map_path='labels/new_train'),
-        pipeline=[
-            dict(type='LoadImageFromFile'),
-            dict(type='LoadAnnotations'),
-            dict(type='RandomCrop', crop_size=crop_size),
-            dict(type='RandomFlip', prob=0.5),
-            dict(type='PackSegInputs')
-        ],
-        reduce_zero_label=False
-    )
-)
-
-val_dataloader = dict(
-    dataset=dict(
-        type='BaseSegDataset',
-        data_root=data_root,
-        data_prefix=dict(img_path='img/val', seg_map_path='labels/val'),
-        pipeline=[
-            dict(type='LoadImageFromFile'),
-            dict(type='LoadAnnotations'),
-            dict(type='PackSegInputs')
-        ],
-        reduce_zero_label=False
-    )
-)
-
-val_evaluator = dict(type='IoUMetric', iou_metrics=['mDice', 'mIoU'])
-# --- Оптимизатор ---
-optim_wrapper = dict(
-    type='OptimWrapper',
-    optimizer=dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0005)
-)
-
-# --- Scheduler ---
-param_scheduler = [
-    dict(type='PolyLR', power=0.9, eta_min=1e-4, begin=0, end=40000, by_epoch=False)
+_base_ = [
+    '../../configs/_base_/models/segformer_mit-b0.py',
+    '../../configs/_base_/datasets/catdog_dataset.py',
+    '../../configs/_base_/default_runtime.py',
+    '../../configs/_base_/schedules/schedule_sanity_check.py'
 ]
 
-# --- Циклы ---
-train_cfg = dict(type='IterBasedTrainLoop', max_iters=40000, val_interval=2000)
-val_cfg = dict(type='ValLoop')
+
+model = dict(
+    type='EncoderDecoder',
+    backbone=dict(
+        type='MixVisionTransformer',
+        in_channels=3,
+        embed_dims=32,
+        num_stages=4,
+        num_layers=[2, 2, 2, 2],
+        num_heads=[1, 2, 5, 8],
+        patch_sizes=[7, 3, 3, 3],
+        sr_ratios=[8, 4, 2, 1],
+        out_indices=(0, 1, 2, 3),
+        mlp_ratio=4,
+        qkv_bias=True,
+        drop_rate=0.0,
+        attn_drop_rate=0.0,
+        drop_path_rate=0.1,
+        init_cfg=dict(type='Pretrained', checkpoint='https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segformer/mit_b0_20220624-7e0fe6dd.pth')
+    ),
+    decode_head=dict(
+        type='SegformerHead',
+        in_channels=[32, 64, 160, 256],
+        in_index=[0, 1, 2, 3],
+        channels=128,
+        dropout_ratio=0.1,
+        num_classes=3,
+        norm_cfg=dict(type='SyncBN', requires_grad=True),
+        align_corners=False,
+        loss_decode=[
+            dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.5, class_weight=[0.1, 1.0, 2.5]),
+            dict(type='DiceLoss', loss_weight=0.5)
+        ]
+    ),
+    # model training and testing settings
+    train_cfg=dict(),
+    test_cfg=dict(mode='whole'),
+    data_preprocessor=dict(
+        type='SegDataPreProcessor',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        bgr_to_rgb=True,
+        pad_val=0,
+        seg_pad_val=255,
+        size=(256, 256)
+    )
+)
+
+visualizer = dict(
+    type='SegLocalVisualizer',
+    vis_backends=[
+        dict(type='LocalVisBackend'),
+        dict(
+            type='ClearMLVisBackend',
+            init_kwargs=dict(
+                project_name='YaPracticum',
+                task_name='unet_catdog_sanity_final',
+                reuse_last_task_id=False,
+                continue_last_task=False
+            )
+        )
+    ],
+    name='catdog_visualizer'
+)
 
 
-work_dir = './work_dirs/baseline_unet'
+work_dir = './work_dirs/unet_catdog_sanity'

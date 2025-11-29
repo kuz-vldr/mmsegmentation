@@ -113,7 +113,7 @@ data
 *.pkl
 *.pkl.json
 *.log.json
-work_dirs/
+/work_dirs
 mmseg/.mim
 
 # Pytorch
@@ -122,3 +122,4 @@ mmseg/.mim
 # My data
 
 /pract_work/dataset
+!test_000000242526_4464.jpg_1.png'

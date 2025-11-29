@@ -36,11 +36,11 @@ model = dict(
         num_convs=1,
         concat_input=False,
         dropout_ratio=0.1,
-        num_classes=2,
+        num_classes=3,
         norm_cfg=norm_cfg,
         align_corners=False,
         loss_decode=dict(
-            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=15)),
     auxiliary_head=dict(
         type='FCNHead',
         in_channels=128,
@@ -49,7 +49,7 @@ model = dict(
         num_convs=1,
         concat_input=False,
         dropout_ratio=0.1,
-        num_classes=2,
+        num_classes=3,
         norm_cfg=norm_cfg,
         align_corners=False,
         loss_decode=dict(

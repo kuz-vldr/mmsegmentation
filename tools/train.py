@@ -7,11 +7,9 @@ import os.path as osp
 from mmengine.config import Config, DictAction
 from mmengine.logging import print_log
 from mmengine.runner import Runner
-
+from mmseg.utils import register_all_modules
 from mmseg.registry import RUNNERS
 
-from clearml import Task
-Task.init(project_name="Segmentation", task_name="baseline_unet_deeplabv3")
 
 
 def parse_args():
@@ -55,8 +53,9 @@ def parse_args():
 
 
 def main():
+    register_all_modules()
+  
     args = parse_args()
-
     # load config
     cfg = Config.fromfile(args.config)
     cfg.launcher = args.launcher
