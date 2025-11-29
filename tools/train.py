@@ -10,6 +10,9 @@ from mmengine.runner import Runner
 
 from mmseg.registry import RUNNERS
 
+from clearml import Task
+Task.init(project_name="Segmentation", task_name="baseline_unet_deeplabv3")
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a segmentor')

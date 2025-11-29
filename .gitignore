@@ -118,3 +118,7 @@ mmseg/.mim
 
 # Pytorch
 *.pth
+
+# My data
+
+/pract_work/dataset

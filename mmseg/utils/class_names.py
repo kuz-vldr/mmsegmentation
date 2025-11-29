@@ -546,3 +546,13 @@ def get_palette(dataset):
     else:
         raise TypeError(f'dataset must a str, but got {type(dataset)}')
     return labels
+
+
+def catdog_classes():
+    """Class names for CatDog dataset."""
+    return ['background', 'cat', 'dog']
+
+
+def catdog_palette():
+    """Palette for CatDog dataset."""
+    return [[0, 0, 0], [255, 0, 0], [0, 0, 255]]

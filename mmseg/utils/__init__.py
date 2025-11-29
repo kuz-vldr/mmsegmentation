@@ -22,6 +22,7 @@ from .typing_utils import (ConfigType, ForwardResults, MultiConfig,
 
 # isort: off
 from .mask_classification import MatchMasks, seg_data_to_instance_data
+from .class_names import catdog_classes, catdog_palette
 
 __all__ = [
     'collect_env',
@@ -67,4 +68,6 @@ __all__ = [
     'MatchMasks',
     'bdd100k_classes',
     'bdd100k_palette',
+    'catdog_classes',
+    'catdog_palette'
 ]
